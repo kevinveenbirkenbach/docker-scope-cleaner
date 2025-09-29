@@ -20,7 +20,8 @@ class TestDoscolHelpers(unittest.TestCase):
         cid = doscol.resolve_cid("taiga-taiga-async-1")
         self.assertTrue(cid.startswith("93deda9"))
         m_run.assert_called_once_with([
-            "docker", "ps", "-a", "--filter", "name=^/taiga-taiga-async-1$",
+            "docker", "ps", "-a", "--filter", "name=^taiga-taiga-async-1$",
+             
             "--format", "{{.ID}}"
         ])
 
