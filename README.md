@@ -1,44 +1,99 @@
 # docker-scope-cleaner 🐳🧹
 
-**docker-scope-cleaner** is a lightweight fix tool for Docker containers stuck with stale **systemd transient scopes** or **cgroups**.
-It ships a single script – `main.sh` – that cleans up orphaned `docker-<ID>.scope` units, removes lingering cgroups, kills leftover shim/runc processes, and reloads systemd/Docker when necessary.
+**docker-scope-cleaner** (short: **doscol**) is a lightweight fix tool for Docker containers stuck with stale **systemd transient scopes** or **cgroups**.  
+It helps when `docker stop` fails with errors like:
 
-### 🚀 Installation
+```
+
+Error response from daemon: cannot stop container: <ID>: tried to kill container, but did not receive an exit event
+
+````
+
+---
+
+## 🚀 Installation
 
 Using [Kevin’s Package Manager](https://github.com/kevinveenbirkenbach/pkgmgr):
 
 ```bash
 pkgmgr install doscol
-```
+````
 
 (`doscol` = **do**cker **sco**pe **l**eaner)
 
-### 🛠 Usage
+If you cloned this repo directly, see `make install` for a hint.
 
-Directly from the repo:
+---
 
-```bash
-bash main.sh <container-name>
-# Example:
-bash main.sh openresty
-```
+## 🛠 Usage
 
-After installation via **pkgmgr**:
+Run the CLI directly:
 
 ```bash
-doscol <container-name>
-# Example:
-doscol openresty
+python3 main.py <container-name-or-id>
 ```
 
-### ✨ Features
+Or after installing with **pkgmgr**:
+
+```bash
+doscol <container-name-or-id>
+```
+
+### Examples
+
+```bash
+# Try graceful stop, fall back to hard cleanup if needed
+doscol taiga-taiga-async-1
+
+# Immediately perform hard cleanup
+doscol taiga-taiga-async-1 --hard
+
+# Cleanup + restart containerd/docker afterwards
+doscol taiga-taiga-async-1 --restart-daemons
+```
+
+---
+
+## ✨ Features
 
 * Detects and removes stale `docker-*.scope` units
 * Cleans orphaned cgroups under `/sys/fs/cgroup/system.slice`
-* Kills stuck `containerd-shim`/`runc` processes
-* Reloads systemd and restarts Docker daemons if needed
+* Kills stuck `containerd-shim` / `runc` processes
+* Optionally deletes containerd tasks via `ctr`
+* Reloads systemd and restarts Docker/Containerd daemons if needed
 
-### 📖 Background
+---
+
+## 🧪 Development
+
+### Run tests
+
+This project includes unittests in `test.py`:
+
+```bash
+make test
+```
+
+### Install (hint only)
+
+`make install` does **not** install files.
+It just reminds you to use **pkgmgr**:
+
+```bash
+make install
+```
+
+Output:
+
+```
+⚠️  Installation is handled via pkgmgr.
+   Please run:
+       pkgmgr install doscol
+```
+
+---
+
+## 📖 Background
 
 This tool was developed to address recurring Docker restart issues where systemd refused to create a new container scope:
 
@@ -47,10 +102,15 @@ OCI runtime create failed: unable to apply cgroup configuration:
 Unit docker-<ID>.scope was already loaded or has a fragment file
 ```
 
-👉 See the full conversation and debugging process here: [ChatGPT Conversation]([https://chat.openai.com/share/6c7b1632-23c4-4c26-91b3-77c73ad7a8a7](https://chatgpt.com/share/68a5e136-8068-800f-ae53-1e166897fe10))
+---
 
-### 👨‍💻 Author
+## 👨‍💻 Author
 
 Created by **Kevin Veen-Birkenbach**
 🌍 [https://www.veen.world](https://www.veen.world)
 
+---
+
+## 📜 License
+
+This project is licensed under the [MIT License](./LICENSE).
